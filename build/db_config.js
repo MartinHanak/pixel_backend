@@ -22,28 +22,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
 const dotenv = __importStar(require("dotenv"));
-//import Sequelize from 'sequelize-typescript';
-//require('dotenv').config();
-//const { Sequelize } = require('sequelize');
 dotenv.config();
-//const sequelize = new Sequelize(process.env.DATABASE_URL) as unknown; // eslint-disable-line no-unsafe-assignment
-const app = (0, express_1.default)();
-app.use(express_1.default.json());
-const PORT = 3000;
-app.get('/ping', (_req, res) => {
-    console.log('someone pinged here');
-    res.send(`pong `);
-});
-app.get('/', (_req, res) => {
-    console.log('someone pinged here');
-    res.send('pong');
-});
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+console.log(process.env.DB_NAME);
+module.exports = {
+    "development": {
+        "username": process.env.DB_USER,
+        "password": process.env.DB_PASS,
+        "database": process.env.DB_NAME,
+        "host": "127.0.0.1",
+        "dialect": "postgres"
+    },
+    "test": {},
+    "production": {}
+};
