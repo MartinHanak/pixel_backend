@@ -1,19 +1,27 @@
 import { Table, Model, Column, DataType } from "sequelize-typescript";
-import sequelize from '../util/db';
 
-class User extends Model {
 
-}
-
-User.init({
-    id : {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    }
-}, {
-    sequelize,
-    underscored: true,
+@Table({
     timestamps: false,
-    modelName: 'user'
-});
+    tableName: "users",
+})
+export class User extends Model {
+    @Column({
+        type: DataType.STRING,
+        allowNull: false,
+    })
+    name!: string;
+
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: false,
+    })  
+    username!: string;
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: false,
+    })  
+    password!: string;
+}
