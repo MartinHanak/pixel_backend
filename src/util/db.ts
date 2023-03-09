@@ -1,10 +1,10 @@
 import { Sequelize, SequelizeOptions } from "sequelize-typescript";
 import { User } from "../models/user";
 
-import {DATABASE_URL  } from './config';
+import { DATABASE_URL  } from './config';
 
 
-const sequelize = new Sequelize( DATABASE_URL  as string, {
+export const sequelize = new Sequelize( DATABASE_URL  as string, {
     dialect: "postgres",
     logging: false,
     models: [User]

@@ -1,5 +1,6 @@
 
 import {User} from './models/user';
+import {Jwt } from  'jsonwebtoken';
 
 // to make the file a module and avoid the TypeScript error
 export {}
@@ -18,7 +19,8 @@ declare global {
 declare global {
   namespace Express {
     interface Locals {
-      user: User
+      user: User,
+      decodedToken: Jwt
     }
   }
 }
