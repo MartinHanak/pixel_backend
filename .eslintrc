@@ -4,6 +4,9 @@
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking"
     ],
+    "ignorePatterns": [
+        "*.d.ts"
+    ],
     "plugins": [
         "@typescript-eslint"
     ],
