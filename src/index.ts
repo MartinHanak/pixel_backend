@@ -12,7 +12,7 @@ const app : Application = express();
 
 app.use(express.json());
 
-app.use('/api/users',userRouter);
+app.use('/api/users', userRouter);
 
 const start = async () => {
     await connectToDatabase();

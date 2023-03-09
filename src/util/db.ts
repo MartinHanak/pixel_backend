@@ -1,7 +1,7 @@
 import { Sequelize, SequelizeOptions } from "sequelize-typescript";
 import { User } from "../models/user";
 
-import {DATABASE_URL, DB_NAME } from './config';
+import {DATABASE_URL  } from './config';
 
 
 const sequelize = new Sequelize( DATABASE_URL  as string, {
@@ -13,7 +13,6 @@ const sequelize = new Sequelize( DATABASE_URL  as string, {
 
 export const connectToDatabase = async () => {
     try {
-        console.log(DB_NAME);
         await sequelize.authenticate();
         await sequelize.sync();
         console.log('Connection has been established successfully.');
