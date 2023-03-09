@@ -1,5 +1,6 @@
 import express, {RequestHandler, Request, Response} from 'express';
 import { User, UserCreationAttribues } from '../models/user';
+import bcrypt from 'bcrypt';
 
 export const router = express.Router();
 
@@ -32,19 +33,32 @@ router.get('/:id', (async(_req: Request, res: Response) => {
 router.post('/', (async (_req: Request, res: Response) => {
     console.log(_req.body);
     try {
-       // const user = await User.create(_req.body);
-       // const user = User.build(_req.body as Optional<any,string>);
-       // await user.save();
-
-        //const user = new User(_req.body);
-        //user.save();
-
-       // res.json(user);
-       //await new Promise(resolve => setTimeout(resolve, 2000));
 
        if (isValidUserInput(_req.body)) {
-        const user = await User.create(_req.body);
-        res.json(user);
+
+        // check if unique
+        const existingUser = await User.findOne({
+            where: {
+                username: _req.body.username
+            }
+        });
+
+        if(existingUser) {
+            res.status(400).json({error : "User with the given username already exists."});
+        } else {
+             // create a new user
+            const passwordHash = await bcrypt.hash(_req.body.password,10);
+
+            const user = await User.create({
+                username: _req.body.username,
+                password: passwordHash,
+                name: _req.body.name ? _req.body.name  :  _req.body.username,
+                admin: false
+            });
+
+            res.status(201).json(user);
+
+        }
        } else {
         res.status(400).json({error: "Input is not a valid user input"});
        }
