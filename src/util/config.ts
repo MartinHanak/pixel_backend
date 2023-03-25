@@ -12,3 +12,6 @@ export const DB_PASS = process.env.DB_PASS;
 export const DB_NAME = process.env.DB_NAME;
 
 export const SECRET = process.env.SECRET;
+
+
+export const CHATGPT_API_KEY = process.env.CHATGPT_API_KEY;

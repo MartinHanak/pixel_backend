@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 export const router = express.Router();
 
 // get all users
-router.get('/', (async(_req : Request, res: Response) => {
+router.get('/', ( async (_req : Request, res: Response) => {
     const users = await User.findAll();
     res.json(users);
 }) as RequestHandler);
@@ -20,7 +20,7 @@ const isValidUserInput = (input: any): input is UserCreationAttribues => {
 };
 
 // get one user
-router.get('/:id', (async(_req: Request, res: Response) => {
+router.get('/:id', ( async (_req: Request, res: Response) => {
     const user = await User.findByPk(_req.params.id);
     if(user) {
         res.json(user);
@@ -30,7 +30,7 @@ router.get('/:id', (async(_req: Request, res: Response) => {
 } ) as RequestHandler);
 
 // create a new user
-router.post('/', (async (_req: Request, res: Response) => {
+router.post('/', ( async (_req: Request, res: Response) => {
     console.log(_req.body);
     try {
 
