@@ -2,6 +2,9 @@ import express, {RequestHandler, Request, Response} from 'express';
 import { User, UserCreationAttribues } from '../models/user';
 import bcrypt from 'bcrypt';
 
+import jwt from 'jsonwebtoken';
+import { SECRET } from '../util/config';
+
 export const router = express.Router();
 
 // get all users
@@ -56,7 +59,9 @@ router.post('/', ( async (_req: Request, res: Response) => {
                 admin: false
             });
 
-            res.status(201).json(user);
+            const token = jwt.sign({username: user.username, id: user.id}, SECRET as string);
+
+            res.status(201).json({username: user.username, token: token});
 
         }
        } else {

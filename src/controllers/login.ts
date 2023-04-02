@@ -11,8 +11,9 @@ export const router = express.Router();
 const correctInputFormat =  (_req : Request, res : Response, next: NextFunction) => {
     if(!(_req.body.username && _req.body.password)) {
         res.status(400).json({error: "Input does not contain username or password"});
+    } else {
+        next();
     }
-    next();
 };
 
 
