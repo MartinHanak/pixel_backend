@@ -50,13 +50,11 @@ router.post('/', ( async (_req: Request, res: Response) => {
             res.status(400).json({error : "User with the given username already exists."});
         } else {
              // create a new user
-            const passwordHash = await bcrypt.hash(_req.body.password,10);
+            const passwordHash = await bcrypt.hash(_req.body.password, 10);
 
             const user = await User.create({
                 username: _req.body.username,
                 password: passwordHash,
-                name: _req.body.name ? _req.body.name  :  _req.body.username,
-                admin: false
             });
 
             const token = jwt.sign({username: user.username, id: user.id}, SECRET as string);

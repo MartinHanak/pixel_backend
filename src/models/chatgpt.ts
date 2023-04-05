@@ -28,7 +28,7 @@ class chatGPTInterfaceClass  {
             temperature : temperature? temperature : 0.5
         }
 
-        const response = await fetch(` https://api.openai.com/v1/chat/completions`,{
+        const response = await fetch(` https://api.openai.com/v1/chat/completions`, {
             method: "POST",
             headers: headers,
             body: JSON.stringify(body)

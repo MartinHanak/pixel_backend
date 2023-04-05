@@ -5,11 +5,9 @@ interface UserAttribues {
     id: number;
     username: string;
     password: string;
-    name: string;
-    admin: boolean;
 }
 
-export type UserCreationAttribues = Optional<UserAttribues, 'id' | 'admin' | 'name'  >;
+export type UserCreationAttribues = Optional<UserAttribues,  'id'>;
 
 @Table({
     timestamps: false,
@@ -39,15 +37,4 @@ export class User extends Model<UserAttribues, UserCreationAttribues> {
     })  
     password!: string;
 
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-    })
-    name!: string;
-
-    @Column({
-        type: DataType.BOOLEAN,
-        defaultValue: false
-    })
-    admin!: boolean;
 }
