@@ -50,7 +50,7 @@ router.post('/', correctInputFormat, userExists,  passwordMatch, (  (_req:Reques
         const user = res.locals.user as User;
         const token = jwt.sign({username: user.username, id: user.id}, SECRET as string);
 
-        res.status(200).send({token, username: user.username, name: user.name});
+        res.status(200).send({token, username: user.username});
 
     } catch(error) {    
         res.status(400).json({error});

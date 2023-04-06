@@ -25,7 +25,7 @@ class chatGPTInterfaceClass  {
         const body : chatGPTRequestBody = {
             model : "gpt-3.5-turbo",
             messages: messages,
-            temperature : temperature? temperature : 0.5
+            temperature : temperature? temperature : 1.0
         }
 
         const response = await fetch(` https://api.openai.com/v1/chat/completions`, {

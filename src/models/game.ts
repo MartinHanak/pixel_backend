@@ -13,7 +13,7 @@ interface GameAttributes {
 export type GameCreationAttributes = Optional<GameAttributes, 'id'>
 
 @Table({
-    timestamps: false,
+    timestamps: true,
     underscored: true,
     tableName: "games",
     modelName: "game"
@@ -35,5 +35,6 @@ export class Game extends Model<GameAttributes,GameCreationAttributes> {
 
     @Column 
     numberOfQuestions!: number;
+
 
 }
