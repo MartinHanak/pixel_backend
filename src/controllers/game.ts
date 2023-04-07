@@ -217,13 +217,40 @@ router.post('/:id/:questionOrder', tokenExtractor, (async (_req: Request, res: R
             return message;
         })
 
-        const newConversationMessage = await chatGPTInterface.getNextIntroduction(previousConvoMessages);
-        const newQuestionMessage = await chatGPTInterface.getNextQuestion(previousQuestionMessages);
+        const newConversationMessage =  chatGPTInterface.getNextIntroduction(gameId, questionOrder, previousConvoMessages);
+        const newQuestionMessage =  chatGPTInterface.getNextQuestion(gameId, questionOrder, previousQuestionMessages);
 
 
+        // queue processing of the chatGPT response before responding, but do not await
+        newConversationMessage.then((chatGPTResponse) => {
+            const newMessage : message = chatGPTResponse.choices[0].message;
+
+            Conversation.create({
+                gameId: gameId,
+                role: newMessage.role,
+                content: newMessage.content,
+                questionOrder: questionOrder
+            })
+            console.log("message ready")
+            console.log(newMessage)
+        })
+
+        newQuestionMessage.then((chatGPTResponse) => {
+            const newMessage : message = chatGPTResponse.choices[0].message;
+
+            QuestionConversation.create({
+                gameId: gameId,
+                role: newMessage.role,
+                content: newMessage.content,
+                questionOrder: questionOrder
+            })
+
+            console.log("message ready")
+            console.log(newMessage)
+        })
 
         // respond
-        res.status(200).json({message: newConversationMessage, question: newQuestionMessage})
+        res.status(200).json({message: `Question ${questionOrder} initialized.`})
         //res.status(200).json({message: `Question ${questionOrder} initialized.`})
 
 }) as RequestHandler)

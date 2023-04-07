@@ -1,5 +1,7 @@
 import fetch from 'node-fetch';
 import { CHATGPT_API_KEY } from '../util/config';
+import { Conversation } from './conversation';
+import { QuestionConversation } from './questionConversation';
 
 export type message = {
     role : "system" | "user" | "assistant",
@@ -39,49 +41,77 @@ class chatGPTInterfaceClass  {
         return jsonResponse;
     }
 
-    async getNextQuestion(messages?: messages) {
+    async getNextQuestion(gameId: number, questionOrder: number, messages?: messages) {
 
-        const systemMessage : message = {role: "system",
-        content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me a random question in the style of Who wants to be a millionaire and give me 4 options to answer with only one of them correct. Do not ask about the same topic twice. Make the question hard to answer. Structure your response so that there is always Question and : before the question and structure the 4 answers as a list. Structure your response so that there is always Answer and : before the correct answer. Make sure that the answer is exactly equal to the correct option."}
+        if(messages && messages.length >= 1) {
+            // append new system message
+            const systemMessage : message = {
+                role: "system",
+                content: "Assume that the previous question was answered correctly. Ask me a new question."
+            }
 
-        if(messages && messages.length > 1) {
-            return this.getGenericResponse(messages,0.5);
+            await QuestionConversation.create({
+                gameId: gameId,
+                role: systemMessage.role,
+                content: systemMessage.content,
+                questionOrder: questionOrder
+            })
+
+            // gen next response using all previous messages
+            return this.getGenericResponse([...messages,systemMessage]);
         } else {
-            return this.getGenericResponse([systemMessage],0.5);
+            // create initial system message and append
+            const systemMessage : message = {
+                role: "system",
+                content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me a random question in the style of Who wants to be a millionaire and give me 4 options to answer with only one of them correct. Do not ask about the same topic twice. Make the question hard to answer. Structure your response so that there is always Question and : before the question and structure the 4 answers as a list. Structure your response so that there is always Answer and : before the correct answer. Make sure that the answer is exactly equal to the correct option."
+            }
+
+            await QuestionConversation.create({
+                gameId: gameId,
+                role: systemMessage.role,
+                content: systemMessage.content,
+                questionOrder: questionOrder
+            })
+
+            // get first response
+            return this.getGenericResponse([systemMessage]);
         }
     }
 
-    async getFirstIntroduction(messages? : messages) {
-        const systemMessage : message = {
-            role: "system",
-            content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me something before the next question. Try to be funny and irritating at the same time."
-        }
-        const systemStructure : message = {
-            role: "system",
-            content : "Also give me 4 options on how to react to your introduction before answering the question. Structure the options so that there is always O and : before the option and  show it as a list. Make the first option sarcastic, second option generally positive, third option negative and make the fourth option sound like a Karen."
-        }
 
+    async getNextIntroduction(gameId: number, questionOrder: number, messages? : messages) {
 
-        if(messages && messages.length > 1) {
-            return this.getGenericResponse(messages)
+        if(messages && messages.length >= 1) {
+            const systemMessage : message = {
+                role: "system",
+                content: "Tell me an introduction for the next question. Try to be funny and irritating at the same time. Assume that the previous question was answered correctly.  Make the introduction for the next question short with only one sentence in length."
+            }
+
+            await Conversation.create({
+                gameId: gameId,
+                role: systemMessage.role,
+                content: systemMessage.content,
+                questionOrder: questionOrder
+            })
+
+            return this.getGenericResponse([...messages, systemMessage])
+
         } else {
-            return this.getGenericResponse([systemMessage, systemStructure]);
-        }
-    }
-
-    async getNextIntroduction(messages? : messages) {
-        const systemMessage : message = {
-            role: "system",
-            content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me an introduction for the next question. Try to be funny and irritating at the same time. Assume that the previous question was answered correctly.  Make the introduction for the next question short."
-        }
-
-        
+            // generate first introduction
+            const systemMessage : message = {
+                role: "system",
+                content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me something before the next question. Try to be funny and irritating at the same time. Do not mention the question order. Make your introduction short."
+            }
 
 
-        if(messages && messages.length > 1) {
-            return this.getGenericResponse(messages, 1)
-        } else {
-            return this.getGenericResponse([systemMessage], 1);
+            await Conversation.bulkCreate([{
+                gameId: gameId,
+                role: systemMessage.role,
+                content: systemMessage.content,
+                questionOrder: questionOrder
+            }])
+
+            return this.getGenericResponse([systemMessage]);
         }
     }
 
