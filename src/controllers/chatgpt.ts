@@ -14,7 +14,7 @@ router.post('/', (async (_req: Request, res:Response ) => {
     
     try {
 
-        const response = await chatGPTInterface.getNextQuestion();
+        const response = await chatGPTInterface.getNextQuestion(0,0);
 
         res.status(200).send(response);
 

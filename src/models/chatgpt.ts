@@ -66,15 +66,27 @@ class chatGPTInterfaceClass  {
                 content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me a random question in the style of Who wants to be a millionaire and give me 4 options to answer with only one of them correct. Do not ask about the same topic twice. Make the question hard to answer. Structure your response so that there is always Question and : before the question and structure the 4 answers as a list. Structure your response so that there is always Answer and : before the correct answer. Make sure that the answer is exactly equal to the correct option."
             }
 
-            await QuestionConversation.create({
+            const optionalSystemMessage : message = {
+                role: "system",
+                content: "If possible, center all your question about the following topic: Path of Exile in-game facts"
+            }
+
+
+
+            await QuestionConversation.bulkCreate([{
                 gameId: gameId,
                 role: systemMessage.role,
                 content: systemMessage.content,
                 questionOrder: questionOrder
-            })
+            },{
+                gameId: gameId,
+                role: optionalSystemMessage.role,
+                content: optionalSystemMessage.content,
+                questionOrder: questionOrder
+            }])
 
             // get first response
-            return this.getGenericResponse([systemMessage]);
+            return this.getGenericResponse([systemMessage,optionalSystemMessage]);
         }
     }
 

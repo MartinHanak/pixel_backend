@@ -6,6 +6,7 @@ import { QuestionConversation } from '../models/questionConversation';
 import { InitializationCheck } from '../models/InitializationCheck';
 
 import { chatGPTInterface, message } from '../models/chatgpt';
+import getStructuredQuestion from '../util/extractStructuredQuestion';
 
 
 export const router = express.Router();
@@ -247,6 +248,8 @@ router.post('/:id/:questionOrder', tokenExtractor, (async (_req: Request, res: R
 
             console.log("message ready")
             console.log(newMessage)
+            const structuredResponse = getStructuredQuestion(newMessage.content);
+            console.log(structuredResponse);
         })
 
         // respond
