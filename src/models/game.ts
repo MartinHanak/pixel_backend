@@ -1,4 +1,4 @@
-import { Table, Model, Column, DataType, ForeignKey } from "sequelize-typescript";
+import { Table, Model, Column, DataType, ForeignKey, AllowNull } from "sequelize-typescript";
 import { User } from "./user";
 import { Optional } from "sequelize";
 
@@ -8,6 +8,7 @@ interface GameAttributes {
     userId: number;
     correctlyAnswered: number;
     numberOfQuestions: number;
+    theme?: string;
 }
 
 export type GameCreationAttributes = Optional<GameAttributes, 'id'>
@@ -35,6 +36,10 @@ export class Game extends Model<GameAttributes,GameCreationAttributes> {
 
     @Column 
     numberOfQuestions!: number;
+
+    @AllowNull
+    @Column(DataType.TEXT)
+    theme!: string;
 
 
 }
