@@ -1,5 +1,6 @@
-import { Table, Model, Column, DataType } from "sequelize-typescript";
+import { Table, Model, Column, DataType, HasMany } from "sequelize-typescript";
 import { Optional } from 'sequelize';
+import { Game } from "./game";
 
 interface UserAttribues {
     id: number;
@@ -11,7 +12,7 @@ export type UserCreationAttribues = Optional<UserAttribues,  'id'>;
 
 @Table({
     timestamps: false,
-    underscored: true,
+    underscored: false,
     tableName: "users",
     modelName: "user"
 })
@@ -36,5 +37,8 @@ export class User extends Model<UserAttribues, UserCreationAttribues> {
         allowNull: false,
     })  
     password!: string;
+
+    @HasMany(() => Game)
+    games!: Game[]
 
 }

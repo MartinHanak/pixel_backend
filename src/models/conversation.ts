@@ -1,5 +1,5 @@
 import { Optional } from "sequelize"
-import { Table, Model, Column, DataType, ForeignKey, Is } from "sequelize-typescript";
+import { Table, Model, Column, DataType, ForeignKey, Is, BelongsTo } from "sequelize-typescript";
 import { Game } from "./game";
 
 
@@ -17,7 +17,7 @@ export type ConversationCreationAttributes = Optional<ConversationAttributes, 'i
 
 @Table({
     timestamps: false,
-    underscored: true,
+    underscored: false,
     tableName: "conversations",
     modelName: "conversation"
 })
@@ -32,6 +32,9 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
     @ForeignKey(() => Game)
     @Column
     gameId!: number;
+
+    @BelongsTo(() => Game)
+    game!: Game;
 
     @Is('Role', (value) => {
         if (!(value === "user" || value === "system" || value === "assistant")) {

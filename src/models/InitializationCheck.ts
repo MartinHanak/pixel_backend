@@ -1,5 +1,5 @@
 import { Optional } from "sequelize"
-import { Table, Model, Column, DataType, ForeignKey } from "sequelize-typescript";
+import { Table, Model, Column, DataType, ForeignKey, BelongsTo } from "sequelize-typescript";
 import { Game } from "./game";
 
 interface InitializationCheckAttributes {
@@ -15,7 +15,7 @@ export type InitializationCheckCreationAttributes = Optional<InitializationCheck
 
 @Table({
     timestamps: false,
-    underscored: true,
+    underscored: false,
     tableName: "initializationCheck",
     modelName: "initializationCheck"
 })
@@ -30,6 +30,9 @@ export class InitializationCheck extends Model <InitializationCheckAttributes, I
     @ForeignKey(() => Game)
     @Column
     gameId!: number;
+
+    @BelongsTo(() => Game)
+    game!: Game;
 
     @Column
     questionOrder!: number;

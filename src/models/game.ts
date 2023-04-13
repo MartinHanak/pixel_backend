@@ -1,6 +1,9 @@
-import { Table, Model, Column, DataType, ForeignKey, AllowNull } from "sequelize-typescript";
+import { Table, Model, Column, DataType, ForeignKey, AllowNull, BelongsTo, HasMany } from "sequelize-typescript";
 import { User } from "./user";
 import { Optional } from "sequelize";
+import { Conversation } from "./conversation";
+import { QuestionConversation } from "./questionConversation";
+import { InitializationCheck } from "./InitializationCheck";
 
 
 interface GameAttributes {
@@ -15,7 +18,7 @@ export type GameCreationAttributes = Optional<GameAttributes, 'id'>
 
 @Table({
     timestamps: true,
-    underscored: true,
+    underscored: false,
     tableName: "games",
     modelName: "game"
 })
@@ -31,6 +34,9 @@ export class Game extends Model<GameAttributes,GameCreationAttributes> {
     @Column
     userId!: number;
 
+    @BelongsTo(() => User)
+    user!: User;
+
     @Column
     correctlyAnswered!: number;
 
@@ -42,4 +48,12 @@ export class Game extends Model<GameAttributes,GameCreationAttributes> {
     theme!: string;
 
 
+    @HasMany(() => Conversation)
+    conversations!: Conversation[];
+
+    @HasMany(() => QuestionConversation)
+    questionConversations!: QuestionConversation[];
+
+    @HasMany(() => InitializationCheck)
+    initializationChecks!: InitializationCheck[];
 }
