@@ -34,7 +34,6 @@ router.get('/:id', ( async (_req: Request, res: Response) => {
 
 // create a new user
 router.post('/', ( async (_req: Request, res: Response) => {
-    console.log(_req.body);
     try {
 
        if (isValidUserInput(_req.body)) {
