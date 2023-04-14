@@ -6,8 +6,10 @@ import { QuestionConversation } from '../models/questionConversation';
 import { InitializationCheck } from '../models/InitializationCheck';
 
 import { chatGPTInterface, message } from '../models/chatgpt';
-import getStructuredQuestion, { extractAnswer } from '../util/extractStructuredQuestion';
+import { extractAnswer } from '../util/extractStructuredQuestion';
 import { GameProgress } from '../models/gameProgress';
+import { notifySubscriber } from './game_SSE';
+import getStructuredQuestion from '../util/extractStructuredQuestion';
 
 
 export const router = express.Router();
@@ -153,6 +155,8 @@ router.get('/:id/:questionOrder', tokenExtractor, (async (_req: Request, res: Re
 // if post request for specific game id and question order, initilze chatGPT generation if not already done
 router.post('/:id/:questionOrder', tokenExtractor, (async (_req: Request, res: Response) => {
 
+    const userId = res.locals.decodedToken.id as number;
+
     // check if already initialized and correct user
     const gameId = Number(_req.params.id);
     const questionOrder = Number(_req.params.questionOrder);
@@ -235,9 +239,13 @@ router.post('/:id/:questionOrder', tokenExtractor, (async (_req: Request, res: R
                 role: newMessage.role,
                 content: newMessage.content,
                 questionOrder: questionOrder
+            }).then(() => {
+                notifySubscriber(userId,gameId,questionOrder)
             })
+
             console.log("message ready")
             console.log(newMessage)
+
         })
 
         newQuestionMessage.then((chatGPTResponse) => {
@@ -248,12 +256,13 @@ router.post('/:id/:questionOrder', tokenExtractor, (async (_req: Request, res: R
                 role: newMessage.role,
                 content: newMessage.content,
                 questionOrder: questionOrder
+            }).then(() => {
+                notifySubscriber(userId,gameId,questionOrder)
             })
 
             console.log("message ready")
-            console.log(newMessage)
-            const structuredResponse = getStructuredQuestion(newMessage.content);
-            console.log(structuredResponse);
+            console.log(getStructuredQuestion(newMessage.content))
+            
         })
 
         // respond
