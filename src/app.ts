@@ -6,6 +6,8 @@ import { router as loginRouter } from './controllers/login';
 import { router as chatgptRouter } from './controllers/chatgpt';
 import { router as gameRouter } from './controllers/game'
 
+import { router as gameRouterSSE } from './controllers/game_SSE';
+
 const app : Application = express();
 export default app;
 
@@ -15,7 +17,8 @@ app.use(express.json());
 app.use('/api/users', userRouter);
 app.use('/api/login', loginRouter);
 app.use('/api/chatgpt', chatgptRouter);
-app.use('/api/game', gameRouter )
+app.use('/api/game', gameRouter );
+app.use('/api/gameSSE', gameRouterSSE);
 
 
 app.get('/', ( (_req : Request, res : Response) => {
