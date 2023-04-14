@@ -54,7 +54,7 @@ class chatGPTInterfaceClass  {
             } else if (questionOrder < 15) {
                 difficultyMessageContent = "Make the question hard to answer."
             } else {
-                difficultyMessageContent = "Make the question extremely hard to answer."
+                difficultyMessageContent = "Make the question so hard to answer that only the smartest people alive will be able to answer the question correctly."
             }
 
             // append new system message

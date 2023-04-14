@@ -40,7 +40,7 @@ export default function getStructuredQuestion(input: string) : StructuredQuestio
 
 
 
-function extractQuestion(input: string) : string  | null {
+export function extractQuestion(input: string) : string  | null {
     const questionRegExp = /(Question\: )(.*)/i;
 
     const match = input.match(questionRegExp);
@@ -54,7 +54,7 @@ function extractQuestion(input: string) : string  | null {
 }
 
 
-function extractOptions(input: string) : OptionInterface  | null {
+export function extractOptions(input: string) : OptionInterface  | null {
 
     const optionsRegExp = /(A[\)\.\:\-]\s*)(.+)(\n)(B[\)\.\:\-]\s*)(.+)(\n)(C[\)\.\:\-]\s*)(.+)(\n)(D[\)\.\:\-]\s*)(.+)(\n)/i
 
@@ -80,7 +80,7 @@ function extractOptions(input: string) : OptionInterface  | null {
 }
 
 
-function extractAnswer(input: string) : answerType | null {
+export function extractAnswer(input: string) : answerType | null {
     const answerRegExp = /(Answer:)(\s+)?(\n)?(\w)([\)\.\:\-])/i;
 
     const match = input.match(answerRegExp);

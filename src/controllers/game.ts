@@ -1,12 +1,13 @@
 import express, {RequestHandler, Request, Response} from 'express';
-import { tokenExtractor } from '../util/middleware';
+import { correctUser, tokenExtractor } from '../util/middleware';
 import { Game } from '../models/game';
 import { Conversation, roleType } from '../models/conversation';
 import { QuestionConversation } from '../models/questionConversation';
 import { InitializationCheck } from '../models/InitializationCheck';
 
 import { chatGPTInterface, message } from '../models/chatgpt';
-import getStructuredQuestion from '../util/extractStructuredQuestion';
+import getStructuredQuestion, { extractAnswer } from '../util/extractStructuredQuestion';
+import { GameProgress } from '../models/gameProgress';
 
 
 export const router = express.Router();
@@ -258,5 +259,84 @@ router.post('/:id/:questionOrder', tokenExtractor, (async (_req: Request, res: R
         // respond
         res.status(200).json({message: `Question ${questionOrder} initialized.`})
         //res.status(200).json({message: `Question ${questionOrder} initialized.`})
+
+}) as RequestHandler)
+
+
+router.post('/answer/:id/:questionOrder', tokenExtractor, correctUser, (async (_req: Request, res: Response) => {
+    const answer = _req.body.answer;
+
+    if(answer !== 'A' && answer !== 'B' && answer !== 'C' && answer !== 'D') {
+        res.status(400).json({error: `Received answer ${answer} is not a valid answer A, B, C or D`})
+        return
+    }
+
+    const gameId = Number(_req.params.id);
+    const questionOrder = Number(_req.params.questionOrder);
+
+    if( isNaN(gameId) || isNaN(questionOrder) ) {
+        res.status(400).json({error: `GameId ${gameId} or question order ${questionOrder} is not a number.`})
+        return
+    }
+
+    const gamePromise = Game.findOne({
+        where: {
+            id: gameId
+        }
+    })
+
+    const questionPromise = QuestionConversation.findOne({
+        where: {
+            role: "assistant",
+            gameId: gameId,
+            questionOrder: questionOrder
+        }
+    })
+
+    const [game, questionConvo] = await Promise.all([gamePromise, questionPromise]);
+
+    if(!game || !questionConvo) {
+        res.status(404).json({error: `Could not find game or question for the gameId: ${gameId} and questionOrder: ${questionOrder}`});
+        return
+    }
+
+    const correctAnswer = extractAnswer(questionConvo.content)
+
+    if(!correctAnswer) {
+        res.status(400).json({error: `Correct anser could not be extracted from chatGPT message content: ${questionConvo.content}`});
+        return
+    }
+
+
+    // check if already answered
+    const alreadyAnswered = await GameProgress.findOne({
+        where: {
+            gameId: gameId,
+            questionOrder: questionOrder
+        }
+    })
+
+    if(alreadyAnswered) {
+        res.status(400).json({error: `Question ${questionOrder} for the game ${gameId} has already been answered.`});
+        return
+    }
+
+    if(answer === correctAnswer) {
+        await GameProgress.create({
+            gameId: gameId,
+            questionOrder: questionOrder,
+            correctlyAnswered: true
+        })
+
+        res.status(200).json({correctlyAnswered: true})
+    } else {
+        await GameProgress.create({
+            gameId: gameId,
+            questionOrder: questionOrder,
+            correctlyAnswered: false
+        })
+
+        res.status(200).json({correctlyAnswered: false})
+    }
 
 }) as RequestHandler)
