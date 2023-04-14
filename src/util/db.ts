@@ -9,6 +9,7 @@ import { Game } from "../models/game";
 import { Conversation } from "../models/conversation";
 import { QuestionConversation } from "../models/questionConversation";
 import { InitializationCheck } from "../models/InitializationCheck";
+import { GameProgress } from "../models/gameProgress";
 
 import { DATABASE_URL  } from './config';
 
@@ -16,7 +17,7 @@ import { DATABASE_URL  } from './config';
 export const sequelize = new Sequelize( DATABASE_URL  as string, {
     dialect: "postgres",
     logging: false,
-    models: [User, Game, Conversation, QuestionConversation, InitializationCheck]
+    models: [User, Game, Conversation, QuestionConversation, InitializationCheck, GameProgress]
 } );
 
 

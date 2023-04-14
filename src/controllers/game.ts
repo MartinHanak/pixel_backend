@@ -40,11 +40,14 @@ router.post('/', tokenExtractor, ( async (_req : Request, res: Response) => {
     const userId = res.locals.decodedToken.id as number;
     console.log(userId)
 
+    const theme = _req.body.theme;
+
     // always create a new game
     const game = await Game.create({
         userId: userId,
         correctlyAnswered: 0,
-        numberOfQuestions: 16
+        numberOfQuestions: 16,
+        theme: theme? theme : null
         })
 
 

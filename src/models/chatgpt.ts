@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import { CHATGPT_API_KEY } from '../util/config';
 import { Conversation } from './conversation';
 import { QuestionConversation } from './questionConversation';
+import { Game } from './game';
 
 export type message = {
     role : "system" | "user" | "assistant",
@@ -44,10 +45,22 @@ class chatGPTInterfaceClass  {
     async getNextQuestion(gameId: number, questionOrder: number, messages?: messages) {
 
         if(messages && messages.length >= 1) {
+
+            let difficultyMessageContent: string;
+            if(questionOrder < 5) {
+                difficultyMessageContent = "Make the question easy to answer."
+            } else if (questionOrder < 10) {
+                difficultyMessageContent = "Make the question moderately hard to answer."
+            } else if (questionOrder < 15) {
+                difficultyMessageContent = "Make the question hard to answer."
+            } else {
+                difficultyMessageContent = "Make the question extremely hard to answer."
+            }
+
             // append new system message
             const systemMessage : message = {
                 role: "system",
-                content: "Assume that the previous question was answered correctly. Ask me a new question."
+                content: `Assume that the previous question was answered correctly. Ask me a new question. ${difficultyMessageContent}`
             }
 
             await QuestionConversation.create({
@@ -66,27 +79,40 @@ class chatGPTInterfaceClass  {
                 content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me a random question in the style of Who wants to be a millionaire and give me 4 options to answer with only one of them correct. Do not ask about the same topic twice. Make the question hard to answer. Structure your response so that there is always Question and : before the question and structure the 4 answers as a list. Structure your response so that there is always Answer and : before the correct answer. Make sure that the answer is exactly equal to the correct option."
             }
 
-            const optionalSystemMessage : message = {
-                role: "system",
-                content: "If possible, center all your question about the following topic: Path of Exile in-game facts"
+            const sentMessages : messages = [ systemMessage ]
+
+            const game = await Game.findOne({
+                where: {
+                    id: gameId
+                }
+            })
+
+            if (game && game.theme) {
+                const theme = game.theme;
+
+                const optionalSystemMessage : message = {
+                    role: "system",
+                    content: `If possible, center all your question about the following topic: ${theme}`
+                }
+
+                sentMessages.push(optionalSystemMessage);
+
             }
 
-
-
-            await QuestionConversation.bulkCreate([{
-                gameId: gameId,
-                role: systemMessage.role,
-                content: systemMessage.content,
-                questionOrder: questionOrder
-            },{
-                gameId: gameId,
-                role: optionalSystemMessage.role,
-                content: optionalSystemMessage.content,
-                questionOrder: questionOrder
-            }])
+            // save used messages
+            await QuestionConversation.bulkCreate(
+                sentMessages.map((msg: message) => {
+                    return {
+                        gameId: gameId,
+                        role: msg.role,
+                        content: msg.content,
+                        questionOrder: questionOrder
+                    }
+                })
+            )
 
             // get first response
-            return this.getGenericResponse([systemMessage,optionalSystemMessage]);
+            return this.getGenericResponse(sentMessages);
         }
     }
 

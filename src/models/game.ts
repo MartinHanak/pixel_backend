@@ -4,6 +4,7 @@ import { Optional } from "sequelize";
 import { Conversation } from "./conversation";
 import { QuestionConversation } from "./questionConversation";
 import { InitializationCheck } from "./InitializationCheck";
+import { GameProgress } from "./gameProgress";
 
 
 interface GameAttributes {
@@ -56,4 +57,7 @@ export class Game extends Model<GameAttributes,GameCreationAttributes> {
 
     @HasMany(() => InitializationCheck)
     initializationChecks!: InitializationCheck[];
+
+    @HasMany(() => GameProgress)
+    gameProgress!: GameProgress[];
 }
