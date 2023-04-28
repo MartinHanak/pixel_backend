@@ -38,9 +38,8 @@ router.get('/:id/:questionOrder', tokenExtractor, correctUser, (async (_req: Req
 
     const userId = res.locals.decodedToken.id as number;
 
-    const data = `data: ${JSON.stringify({id: userId})}\n\n`;
-
-    res.write(data);
+    //const data = `data: ${JSON.stringify({id: userId})}\n\n`;
+    //res.write(data);
 
     const sub = {
         userId: userId,

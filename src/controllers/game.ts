@@ -21,13 +21,13 @@ router.get('/', tokenExtractor, ( async (_req: Request, res: Response) => {
     // get id and username from extracted token
     const userId = res.locals.decodedToken.id as number;
 
-    const game = await Game.findOne({
+    const games = await Game.findAll({
         where: { userId : userId },
         order: [['createdAt', 'DESC']]
     })
 
-    if(game) {
-        res.status(200).json({gameId: game.id})
+    if(games) {
+        res.status(200).json({games})
     } else {
         res.status(404).json({ error: "No game found for given user."})
     }
@@ -337,7 +337,7 @@ router.post('/answer/:id/:questionOrder', tokenExtractor, correctUser, (async (_
             correctlyAnswered: true
         })
 
-        res.status(200).json({correctlyAnswered: true})
+        res.status(200).json({correctlyAnswered: true, correctAnswer: correctAnswer})
     } else {
         await GameProgress.create({
             gameId: gameId,
@@ -345,7 +345,7 @@ router.post('/answer/:id/:questionOrder', tokenExtractor, correctUser, (async (_
             correctlyAnswered: false
         })
 
-        res.status(200).json({correctlyAnswered: false})
+        res.status(200).json({correctlyAnswered: false, correctAnswer: correctAnswer})
     }
 
 }) as RequestHandler)
