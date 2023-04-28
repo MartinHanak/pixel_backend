@@ -4,6 +4,8 @@ import { correctUser } from '../util/middleware';
 import { Conversation } from '../models/conversation';
 import { QuestionConversation } from '../models/questionConversation';
 import { extractOptions, extractQuestion } from '../util/extractStructuredQuestion';
+import { InitializationCheck } from '../models/InitializationCheck';
+import { initializeQuestion } from './game';
 
 interface subscriber {
     userId: number,
@@ -56,6 +58,16 @@ router.get('/:id/:questionOrder', tokenExtractor, correctUser, (async (_req: Req
 
     // if ready, respond immediately and end res
     await notifySubscriber(userId, gameId, questionOrder);
+
+    // check if question has been initialized, if not, do it now
+    const initialCheck = await InitializationCheck.findOne({where: {
+        gameId: gameId,
+        questionOrder: questionOrder
+    }})
+
+    if(!initialCheck) {
+        await initializeQuestion(gameId, questionOrder, userId);
+    }
 
 
     _req.on('close', () => {
