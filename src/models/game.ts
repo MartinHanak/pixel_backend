@@ -1,4 +1,4 @@
-import { Table, Model, Column, DataType, ForeignKey, AllowNull, BelongsTo, HasMany } from "sequelize-typescript";
+import { Table, Model, Column, DataType, ForeignKey, AllowNull, BelongsTo, HasMany, Default } from "sequelize-typescript";
 import { User } from "./user";
 import { Optional } from "sequelize";
 import { Conversation } from "./conversation";
@@ -13,9 +13,10 @@ interface GameAttributes {
     correctlyAnswered: number;
     numberOfQuestions: number;
     theme?: string;
+    gameOver: boolean;
 }
 
-export type GameCreationAttributes = Optional<GameAttributes, 'id'>
+export type GameCreationAttributes = Optional<GameAttributes, 'id' | 'gameOver'>
 
 @Table({
     timestamps: true,
@@ -41,12 +42,17 @@ export class Game extends Model<GameAttributes,GameCreationAttributes> {
     @Column
     correctlyAnswered!: number;
 
+    @Default(16)
     @Column 
     numberOfQuestions!: number;
 
     @AllowNull
     @Column(DataType.TEXT)
     theme!: string;
+
+    @Default(false)
+    @Column 
+    gameOver!: boolean;
 
 
     @HasMany(() => Conversation)

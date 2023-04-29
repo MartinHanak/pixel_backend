@@ -15,7 +15,7 @@ import getStructuredQuestion from '../util/extractStructuredQuestion';
 export const router = express.Router();
 
 
-// get the newest created gameID
+// get all games
 router.get('/', tokenExtractor, ( async (_req: Request, res: Response) => {
 
     // get id and username from extracted token
@@ -34,6 +34,109 @@ router.get('/', tokenExtractor, ( async (_req: Request, res: Response) => {
 
 }) as RequestHandler)
 
+// get newest game
+router.get('/last', tokenExtractor, ( async (_req: Request, res: Response) => {
+
+    // get id and username from extracted token
+    const userId = res.locals.decodedToken.id as number;
+
+    const lastGame = await Game.findOne({
+        where: { userId : userId },
+        order: [['createdAt', 'DESC']]
+    })
+
+    if(!lastGame) {
+        res.status(404).json({ error: "No game found for given user."})
+        return
+    }
+
+    let lastQuestionOrder = null;
+
+    // find last questionOrder unanswered for the given game
+    const gameProgress = await GameProgress.findOne({
+        where: {
+            gameId: lastGame.id
+        },
+        order:  [['createdAt', 'DESC']]
+    })
+
+    if(!gameProgress) {
+        // no question answered yet
+        lastQuestionOrder = 1;
+    } else {
+        // db has info about last answered question
+        lastQuestionOrder = gameProgress.questionOrder + 1;
+    }
+
+    // check if it is not higher than max questions OR game over already
+    if(lastGame.gameOver) {
+        res.status(400).json({ error: `Game ${lastGame.id} has already finished.`})
+        return
+    } else if(lastQuestionOrder > lastGame.numberOfQuestions ) {
+        res.status(400).json({ error: `Game ${lastGame.id} has already successfully finished.`})
+        return
+    }
+
+
+    res.status(200).json({
+        gameId: lastGame.id,
+        questionOrder: lastQuestionOrder
+    })
+
+
+}) as RequestHandler)
+
+
+// get oldest questionOrder for specified id
+router.get('/:id/last', tokenExtractor, ( async (_req: Request, res: Response) => {
+
+    const gameId = Number(_req.params.id);
+    let lastQuestionOrder = 0;
+
+    const game = await Game.findOne({
+        where: {
+            id: gameId
+        }
+    })
+
+    if(!game) {
+        res.status(404).json({error: `Game ${gameId} not found`})
+        return
+    }
+
+    // find last questionOrder unanswered for the given game
+    const gameProgress = await GameProgress.findOne({
+        where: {
+            gameId: game.id
+        },
+        order:  [['createdAt', 'DESC']]
+    })
+
+    if(!gameProgress) {
+        // no question answered yet
+        lastQuestionOrder = 1;
+    } else {
+        // db has info about last answered question
+        lastQuestionOrder = gameProgress.questionOrder + 1;
+    }
+
+    // check if it is not higher than max questions OR game over already
+    if(game.gameOver) {
+        res.status(400).json({ error: `Game ${game.id} has already finished.`})
+        return
+    } else if(lastQuestionOrder > game.numberOfQuestions ) {
+        res.status(400).json({ error: `Game ${game.id} has already successfully finished.`})
+        return
+    }
+
+
+    res.status(200).json({
+        gameId: game.id,
+        questionOrder: lastQuestionOrder
+    })
+
+
+}))
 
 
 // create game
@@ -51,7 +154,7 @@ router.post('/', tokenExtractor, ( async (_req : Request, res: Response) => {
         correctlyAnswered: 0,
         numberOfQuestions: 16,
         theme: theme? theme : null
-        })
+    })
 
 
     res.status(200).json({gameId: game.id});
