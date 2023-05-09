@@ -5,6 +5,7 @@ import { Conversation } from "./conversation";
 import { QuestionConversation } from "./questionConversation";
 import { InitializationCheck } from "./InitializationCheck";
 import { GameProgress } from "./gameProgress";
+import { HelpConversation } from "./helpConversation";
 
 
 interface GameAttributes {
@@ -14,9 +15,12 @@ interface GameAttributes {
     numberOfQuestions: number;
     theme?: string;
     gameOver: boolean;
+    used5050: boolean;
+    usedAudience: boolean;
+    usedHelpline: boolean;
 }
 
-export type GameCreationAttributes = Optional<GameAttributes, 'id' | 'gameOver'>
+export type GameCreationAttributes = Optional<GameAttributes, 'id' | 'gameOver' | 'used5050' | 'usedAudience' | 'usedHelpline'>
 
 @Table({
     timestamps: true,
@@ -55,11 +59,27 @@ export class Game extends Model<GameAttributes,GameCreationAttributes> {
     gameOver!: boolean;
 
 
+    @Default(false)
+    @Column 
+    used5050!: boolean;
+
+    @Default(false)
+    @Column 
+    usedAudience!: boolean;
+
+    @Default(false)
+    @Column 
+    usedHelpline!: boolean;
+
+
     @HasMany(() => Conversation)
     conversations!: Conversation[];
 
     @HasMany(() => QuestionConversation)
     questionConversations!: QuestionConversation[];
+
+    @HasMany(() => HelpConversation)
+    helpConversations!: HelpConversation[];
 
     @HasMany(() => InitializationCheck)
     initializationChecks!: InitializationCheck[];

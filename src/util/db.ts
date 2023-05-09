@@ -12,12 +12,13 @@ import { InitializationCheck } from "../models/InitializationCheck";
 import { GameProgress } from "../models/gameProgress";
 
 import { DATABASE_URL  } from './config';
+import { HelpConversation } from "../models/helpConversation";
 
 
 export const sequelize = new Sequelize( DATABASE_URL  as string, {
     dialect: "postgres",
     logging: false,
-    models: [User, Game, Conversation, QuestionConversation, InitializationCheck, GameProgress]
+    models: [User, Game, Conversation, QuestionConversation, InitializationCheck, GameProgress, HelpConversation]
 } );
 
 

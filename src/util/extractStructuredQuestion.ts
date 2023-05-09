@@ -41,12 +41,12 @@ export default function getStructuredQuestion(input: string) : StructuredQuestio
 
 
 export function extractQuestion(input: string) : string  | null {
-    const questionRegExp = /(Question\: )(.*)/i;
+    const questionRegExp = /(Question\:)(\s+)?(\n)?(.*)/i;
 
     const match = input.match(questionRegExp);
 
     if(match) {
-        return match[2];
+        return match[4];
     } else {
         return null;
     }
@@ -56,15 +56,15 @@ export function extractQuestion(input: string) : string  | null {
 
 export function extractOptions(input: string) : OptionInterface  | null {
 
-    const optionsRegExp = /(A[\)\.\:\-]\s*)(.+)(\n)(B[\)\.\:\-]\s*)(.+)(\n)(C[\)\.\:\-]\s*)(.+)(\n)(D[\)\.\:\-]\s*)(.+)(\n)/i
+    const optionsRegExp = /([A1][\)\.\:\-]\s*)(.+)(\n)(\n)?([B2][\)\.\:\-]\s*)(.+)(\n)(\n)?([C3][\)\.\:\-]\s*)(.+)(\n)(\n)?([D4][\)\.\:\-]\s*)(.+)(\n)(\n)?/i
 
     const match = input.match(optionsRegExp);
 
     if(match) {
         const optionA = match[2];
-        const optionB = match[5];
-        const optionC = match[8];
-        const optionD = match[11];
+        const optionB = match[6];
+        const optionC = match[10];
+        const optionD = match[14];
 
         return {
             A: optionA,

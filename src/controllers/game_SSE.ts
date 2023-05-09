@@ -154,7 +154,13 @@ export async function notifySubscriber(userId: number, gameId: number, questionO
         }
 
         if(!data.question || !data.options) {
-            throw new Error(`Question or options could not be extracted from chatGPT message: ${questionConvo.content}`)
+            subscribers[userId].forEach((sub) => {
+                if(sub.gameId === gameId && sub.questionOrder === questionOrder) {
+                    sub.response
+                    .end()
+                }
+            })
+            return
         }
 
         subscribers[userId].forEach((sub) => {

@@ -4,6 +4,10 @@ import { Conversation } from './conversation';
 import { QuestionConversation } from './questionConversation';
 import { Game } from './game';
 
+import { AvailableCharacters, characterFirstSystemMessage } from "./characters"
+import { HelpConversation } from './helpConversation';
+
+
 export type message = {
     role : "system" | "user" | "assistant",
     content: string
@@ -49,9 +53,9 @@ class chatGPTInterfaceClass  {
             let difficultyMessageContent: string;
             if(questionOrder < 5) {
                 difficultyMessageContent = "Make the question easy to answer."
-            } else if (questionOrder < 10) {
+            } else if (questionOrder < 7) {
                 difficultyMessageContent = "Make the question moderately hard to answer."
-            } else if (questionOrder < 15) {
+            } else if (questionOrder < 12) {
                 difficultyMessageContent = "Make the question hard to answer."
             } else {
                 difficultyMessageContent = "Make the question so hard to answer that only the smartest people alive will be able to answer the question correctly."
@@ -76,7 +80,7 @@ class chatGPTInterfaceClass  {
             // create initial system message and append
             const systemMessage : message = {
                 role: "system",
-                content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me a random question in the style of Who wants to be a millionaire and give me 4 options to answer with only one of them correct. Do not ask about the same topic twice. Make the question hard to answer. Structure your response so that there is always Question and : before the question and structure the 4 answers as a list. Structure your response so that there is always Answer and : before the correct answer. Make sure that the answer is exactly equal to the correct option."
+                content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me a random question in the style of Who wants to be a millionaire and give me 4 options to answer with only one of them correct. Do not ask about the same topic twice. Make the question hard to answer. Structure your response so that there is always Question and : before the question and structure the 4 answers as a list indexed by the letters A, B, C, D. Structure your response so that there is always Answer and : before the correct answer. Make sure that the answer is exactly equal to the correct option."
             }
 
             const sentMessages : messages = [ systemMessage ]
@@ -92,7 +96,7 @@ class chatGPTInterfaceClass  {
 
                 const optionalSystemMessage : message = {
                     role: "system",
-                    content: `If possible, center all your question about the following topic: ${theme}`
+                    content: `If possible, center all your question about the following topic: ${theme}. If it is not possible, ignore this command.`
                 }
 
                 sentMessages.push(optionalSystemMessage);
@@ -150,6 +154,28 @@ class chatGPTInterfaceClass  {
             }])
 
             return this.getGenericResponse([systemMessage]);
+        }
+    }
+
+    async getNextHelpMessage(character: AvailableCharacters, gameId: number, questionOrder: number, messages? : messages) {
+        if(messages && messages.length >= 1) {
+            return this.getGenericResponse(messages)
+        } else {
+            // generate first message
+            const systemMessage: message = {
+                role: "system",
+                content:  characterFirstSystemMessage[character]
+            }
+
+            await HelpConversation.create({
+                gameId: gameId,
+                role: systemMessage.role,
+                content: systemMessage.content,
+                questionOrder: questionOrder
+            })
+
+            return this.getGenericResponse([systemMessage]);
+        
         }
     }
 

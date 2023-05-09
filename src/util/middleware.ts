@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction, RequestHandler} from 'express';
+import { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler} from 'express';
 import jwt from 'jsonwebtoken';
 import { SECRET } from './config';
 import { Game } from '../models/game';
@@ -53,3 +53,13 @@ export const correctUser = ( async (_req: Request, res: Response, next: NextFunc
     next()
 
 }) as RequestHandler;
+
+
+export const errorHandler = ((error, _request, res, next) => {
+
+  console.log(error.message)
+
+  res.status(400).json({error: error.message})
+
+  next(error)
+}) as ErrorRequestHandler

@@ -14,7 +14,6 @@ import getStructuredQuestion from '../util/extractStructuredQuestion';
 
 export const router = express.Router();
 
-
 // get all games
 router.get('/', tokenExtractor, ( async (_req: Request, res: Response) => {
 
@@ -146,14 +145,18 @@ router.post('/', tokenExtractor, ( async (_req : Request, res: Response) => {
     const userId = res.locals.decodedToken.id as number;
     console.log(userId)
 
-    const theme = _req.body.theme;
+    let theme = null;
+
+    if(_req.body.theme && _req.body.theme !== '') {
+        theme = _req.body.theme
+    }
 
     // always create a new game
     const game = await Game.create({
         userId: userId,
         correctlyAnswered: 0,
         numberOfQuestions: 16,
-        theme: theme? theme : null
+        theme: theme
     })
 
 
@@ -297,6 +300,105 @@ router.post('/:id/:questionOrder', tokenExtractor, (async (_req: Request, res: R
 
 }) as RequestHandler)
 
+
+
+// get 50/50 options
+router.get('help5050/:id/:questionOrder', tokenExtractor, correctUser, (async (_req: Request, res: Response) => {
+
+    const gameId = Number(_req.params.id);
+    const questionOrder = Number(_req.params.questionOrder);
+
+    if( isNaN(gameId) || isNaN(questionOrder) ) {
+        res.status(400).json({error: `GameId ${gameId} or question order ${questionOrder} is not a number.`})
+        return
+    }
+
+    // get the assistant message containing the question 
+
+    const questionConvo = await QuestionConversation.findOne({
+        where: {
+            role: "assistant",
+            gameId: gameId,
+            questionOrder: questionOrder
+        }
+    })
+
+    if(!questionConvo) {
+        res.status(404).json({error: `Could not find question for the gameId: ${gameId} and questionOrder: ${questionOrder}`});
+        return
+    }
+
+    const correctAnswer = extractAnswer(questionConvo.content)
+
+    const otherOptions = ['A', 'B', 'C', 'D'].filter((element) => element !== correctAnswer);
+
+    const selectedWrongAnswer = otherOptions[Math.floor(Math.random()) * 3]
+
+    const orderedOptions = [correctAnswer, selectedWrongAnswer].sort()
+
+    res.status(200).json({options: orderedOptions})
+
+
+}))
+
+
+router.get('helpaudiance/:id/:questionOrder', tokenExtractor, correctUser, (async ( _req: Request, res: Response) => {
+    const gameId = Number(_req.params.id);
+    const questionOrder = Number(_req.params.questionOrder);
+
+    if( isNaN(gameId) || isNaN(questionOrder) ) {
+        res.status(400).json({error: `GameId ${gameId} or question order ${questionOrder} is not a number.`})
+        return
+    }
+
+    const questionConvo = await QuestionConversation.findOne({
+        where: {
+            role: "assistant",
+            gameId: gameId,
+            questionOrder: questionOrder
+        }
+    })
+
+    if(!questionConvo) {
+        res.status(404).json({error: `Could not find question for the gameId: ${gameId} and questionOrder: ${questionOrder}`});
+        return
+    }
+
+    const correctAnswer = extractAnswer(questionConvo.content)
+
+    //const otherOptions = ['A', 'B', 'C', 'D'].filter((element) => element !== correctAnswer);
+
+    const correctAnswerProbability = 0.25 + Math.random()*0.75;
+
+    const lowerAnswerProbability = Math.random()* (1 - correctAnswerProbability) / 3;
+    const secondLowerAnswerProbability = Math.random() * lowerAnswerProbability;
+    const thirdLowerAnswerProbability = 1 - secondLowerAnswerProbability;
+
+
+    const audianceNumber = 347;
+
+    const correctVotesNumber = Math.floor(audianceNumber * correctAnswerProbability);
+    const lowerVotesNumbers = [
+        Math.floor(lowerAnswerProbability*audianceNumber),
+        Math.floor(secondLowerAnswerProbability*audianceNumber),
+        Math.floor(thirdLowerAnswerProbability*audianceNumber)]
+
+
+    const finalVotes = {A: 0, B: 0, C: 0, D: 0} as any;
+
+    let index = 0
+    for(const option in finalVotes) {
+        if(option === correctAnswer) {
+            finalVotes[option] = correctVotesNumber
+        } else {
+            finalVotes[option] = lowerVotesNumbers[index]
+            index += 1;
+        }
+    }
+
+    res.status(200).json({votes: finalVotes})
+
+}))
 
 router.post('/answer/:id/:questionOrder', tokenExtractor, correctUser, (async (_req: Request, res: Response) => {
     const answer = _req.body.answer;
@@ -459,3 +561,6 @@ export async function initializeQuestion(gameId: number, questionOrder: number, 
         })
 
 }
+
+
+
