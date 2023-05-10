@@ -4,10 +4,12 @@ import { Game } from "./game";
 
 
 import {roleType}  from './questionConversation'
+import { AvailableCharacters } from "./characters";
 
 interface HelpConversationAttributes {
     id: number,
-    gameId: number, 
+    gameId: number,
+    selectedCharacter: AvailableCharacters 
     role: roleType,
     content: string,
     questionOrder: number
@@ -45,6 +47,8 @@ export class HelpConversation extends Model<HelpConversationAttributes, HelpConv
     @Column
     role!: string;
 
+    @Column
+    selectedCharacter!: string
 
     @Column(DataType.TEXT)
     content!: string;

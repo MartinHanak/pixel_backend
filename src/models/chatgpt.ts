@@ -171,6 +171,7 @@ class chatGPTInterfaceClass  {
                 gameId: gameId,
                 role: systemMessage.role,
                 content: systemMessage.content,
+                selectedCharacter: character,
                 questionOrder: questionOrder
             })
 

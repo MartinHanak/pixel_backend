@@ -46,7 +46,7 @@ export class Game extends Model<GameAttributes,GameCreationAttributes> {
     @Column
     correctlyAnswered!: number;
 
-    @Default(16)
+    @Default(15)
     @Column 
     numberOfQuestions!: number;
 

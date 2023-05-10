@@ -3,6 +3,7 @@ import { correctUser, tokenExtractor } from '../util/middleware';
 import { chatGPTInterface, message } from '../models/chatgpt';
 import { HelpConversation } from '../models/helpConversation';
 import { roleType } from '../models/conversation';
+import { AvailableCharacters, availableCharacters } from '../models/characters';
 
 interface subscriber {
     userId: number,
@@ -19,7 +20,7 @@ let subscribers : subscribers = {};
 export const router = express.Router();
 
 
-router.post('/:id/:questionOrder', tokenExtractor, correctUser, (async(_req: Request, res: Response) => {
+router.get('/:id/:questionOrder', tokenExtractor, correctUser, (async(_req: Request, res: Response) => {
 
     const gameId = Number(_req.params.id);
     const questionOrder = Number(_req.params.questionOrder);
@@ -29,10 +30,15 @@ router.post('/:id/:questionOrder', tokenExtractor, correctUser, (async(_req: Req
         return
     }
 
-    if(!_req.body.selectedCharacter) {
+    let selectedCharacter = _req.query.selectedCharacter?.toString() as AvailableCharacters;
+
+    if(!_req.query.selectedCharacter ) {
         res.status(400).json({error: 'No character selected'})
         return
-    }
+    } else if (selectedCharacter && !( availableCharacters.includes(selectedCharacter))) {
+        res.status(400).json({error: 'Selected character is not available'})
+        return
+    } 
 
     const headers = {
       'Content-Type': 'text/event-stream',
@@ -61,18 +67,19 @@ router.post('/:id/:questionOrder', tokenExtractor, correctUser, (async(_req: Req
     // check body for: selected character and maybe a first message from the user?
 
 
-    if( _req.body.playerMessage) {
+    if( _req.query.playerMessage) {
         // create a new message
 
         const newMessage: message = {
             role: 'user',
-            content: _req.body.playerMessage
+            content:  _req.query.playerMessage.toString()
         }
 
         await HelpConversation.create({
             gameId:gameId,
             questionOrder:questionOrder,
             role: newMessage.role,
+            selectedCharacter: selectedCharacter,
             content: newMessage.content
         })
     }
@@ -90,7 +97,7 @@ router.post('/:id/:questionOrder', tokenExtractor, correctUser, (async(_req: Req
         return message;
     })
 
-    const newMessagePromise = chatGPTInterface.getNextHelpMessage(_req.body.selectedCharacter,gameId,questionOrder,previousMessages)
+    const newMessagePromise = chatGPTInterface.getNextHelpMessage(selectedCharacter,gameId,questionOrder,previousMessages)
 
     newMessagePromise.then((chatGPTResponse) => {
         const newMessage : message = chatGPTResponse.choices[0].message;
@@ -100,6 +107,7 @@ router.post('/:id/:questionOrder', tokenExtractor, correctUser, (async(_req: Req
             gameId: gameId,
             questionOrder: questionOrder,
             role: newMessage.role,
+            selectedCharacter: selectedCharacter,
             content: newMessage.content
         }).then(() => {
             // notify subscriber and end connection

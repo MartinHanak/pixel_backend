@@ -10,6 +10,8 @@ import { extractAnswer } from '../util/extractStructuredQuestion';
 import { GameProgress } from '../models/gameProgress';
 import { notifySubscriber } from './game_SSE';
 import getStructuredQuestion from '../util/extractStructuredQuestion';
+import { AvailableCharacters, availableCharacters } from '../models/characters';
+import { HelpConversation } from '../models/helpConversation';
 
 
 export const router = express.Router();
@@ -79,7 +81,8 @@ router.get('/last', tokenExtractor, ( async (_req: Request, res: Response) => {
 
     res.status(200).json({
         gameId: lastGame.id,
-        questionOrder: lastQuestionOrder
+        questionOrder: lastQuestionOrder,
+        numberOfQuestions: lastGame.numberOfQuestions
     })
 
 
@@ -131,7 +134,8 @@ router.get('/:id/last', tokenExtractor, ( async (_req: Request, res: Response) =
 
     res.status(200).json({
         gameId: game.id,
-        questionOrder: lastQuestionOrder
+        questionOrder: lastQuestionOrder,
+        numberOfQuestions: game.numberOfQuestions
     })
 
 
@@ -303,7 +307,7 @@ router.post('/:id/:questionOrder', tokenExtractor, (async (_req: Request, res: R
 
 
 // get 50/50 options
-router.get('help5050/:id/:questionOrder', tokenExtractor, correctUser, (async (_req: Request, res: Response) => {
+router.get('/help5050/:id/:questionOrder', tokenExtractor, correctUser, (async (_req: Request, res: Response) => {
 
     const gameId = Number(_req.params.id);
     const questionOrder = Number(_req.params.questionOrder);
@@ -330,6 +334,11 @@ router.get('help5050/:id/:questionOrder', tokenExtractor, correctUser, (async (_
 
     const correctAnswer = extractAnswer(questionConvo.content)
 
+    if(!correctAnswer) {
+        res.status(400).json({error: 'Could not extract correct answer for help 5050'})
+        return
+    }
+
     const otherOptions = ['A', 'B', 'C', 'D'].filter((element) => element !== correctAnswer);
 
     const selectedWrongAnswer = otherOptions[Math.floor(Math.random()) * 3]
@@ -342,7 +351,7 @@ router.get('help5050/:id/:questionOrder', tokenExtractor, correctUser, (async (_
 }))
 
 
-router.get('helpaudiance/:id/:questionOrder', tokenExtractor, correctUser, (async ( _req: Request, res: Response) => {
+router.get('/helpaudience/:id/:questionOrder', tokenExtractor, correctUser, (async ( _req: Request, res: Response) => {
     const gameId = Number(_req.params.id);
     const questionOrder = Number(_req.params.questionOrder);
 
@@ -370,9 +379,11 @@ router.get('helpaudiance/:id/:questionOrder', tokenExtractor, correctUser, (asyn
 
     const correctAnswerProbability = 0.25 + Math.random()*0.75;
 
-    const lowerAnswerProbability = Math.random()* (1 - correctAnswerProbability) / 3;
-    const secondLowerAnswerProbability = Math.random() * lowerAnswerProbability;
-    const thirdLowerAnswerProbability = 1 - secondLowerAnswerProbability;
+    const lowerAnswerProbability = Math.random()* (1 - correctAnswerProbability) /2;
+    const secondLowerAnswerProbability = Math.random() * (1 - correctAnswerProbability - lowerAnswerProbability);
+    const thirdLowerAnswerProbability = 1 - secondLowerAnswerProbability - lowerAnswerProbability - correctAnswerProbability;
+
+    console.log([correctAnswerProbability, lowerAnswerProbability, secondLowerAnswerProbability, thirdLowerAnswerProbability])
 
 
     const audianceNumber = 347;
@@ -399,6 +410,86 @@ router.get('helpaudiance/:id/:questionOrder', tokenExtractor, correctUser, (asyn
     res.status(200).json({votes: finalVotes})
 
 }))
+
+
+
+router.post('/helpline/:id/:questionOrder', tokenExtractor, correctUser, (async (_req: Request, res: Response) => {
+
+    //const userId = res.locals.decodedToken.id as number;
+
+
+    const gameId = Number(_req.params.id);
+    const questionOrder = Number(_req.params.questionOrder);
+
+    if( isNaN(gameId) || isNaN(questionOrder) ) {
+        res.status(400).json({error: `GameId ${gameId} or question order ${questionOrder} is not a number.`})
+        return
+    }
+
+    const selectedCharacter = _req.body.selectedCharacter?.toString() as AvailableCharacters;
+
+    if(!_req.body.selectedCharacter ) {
+        res.status(400).json({error: 'No character selected'})
+        return
+    } else if (selectedCharacter && !( availableCharacters.includes(selectedCharacter))) {
+        res.status(400).json({error: 'Selected character is not available'})
+        return
+    } 
+
+
+    if(_req.body.playerMessage) {
+        const newMessage: message = {
+            role: 'user',
+            content:  _req.body.playerMessage
+        }
+
+        await HelpConversation.create({
+            gameId:gameId,
+            questionOrder:questionOrder,
+            role: newMessage.role,
+            selectedCharacter: selectedCharacter,
+            content: newMessage.content
+        })
+    }
+
+    const previousConvo = await HelpConversation.findAll({
+        where: {
+            gameId: gameId,
+            questionOrder: questionOrder,
+            selectedCharacter: selectedCharacter
+        }
+    })
+
+    const previousMessages = previousConvo.map((convoElement:HelpConversation) => {
+        const message: message = {
+            role: convoElement.role as roleType,
+            content: convoElement.content
+        }
+        return message;
+    })
+
+    const chatGPTResponse = await chatGPTInterface.getNextHelpMessage(selectedCharacter,gameId,questionOrder,previousMessages);
+
+    const newMessage : message = chatGPTResponse.choices[0].message;
+    console.log(newMessage)
+
+    await HelpConversation.create({
+        gameId: gameId,
+        questionOrder: questionOrder,
+        role: newMessage.role,
+        selectedCharacter: selectedCharacter,
+        content: newMessage.content
+    })
+
+    res.status(200).json({
+        role: newMessage.role,
+        content: newMessage.content
+    })
+
+}))
+
+
+
 
 router.post('/answer/:id/:questionOrder', tokenExtractor, correctUser, (async (_req: Request, res: Response) => {
     const answer = _req.body.answer;
