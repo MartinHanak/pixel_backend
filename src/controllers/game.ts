@@ -82,7 +82,10 @@ router.get('/last', tokenExtractor, ( async (_req: Request, res: Response) => {
     res.status(200).json({
         gameId: lastGame.id,
         questionOrder: lastQuestionOrder,
-        numberOfQuestions: lastGame.numberOfQuestions
+        numberOfQuestions: lastGame.numberOfQuestions,
+        usedAudience: lastGame.usedAudience,
+        used5050: lastGame.used5050,
+        usedHelpline: lastGame.usedHelpline
     })
 
 
@@ -135,7 +138,10 @@ router.get('/:id/last', tokenExtractor, ( async (_req: Request, res: Response) =
     res.status(200).json({
         gameId: game.id,
         questionOrder: lastQuestionOrder,
-        numberOfQuestions: game.numberOfQuestions
+        numberOfQuestions: game.numberOfQuestions,
+        usedAudience: game.usedAudience,
+        used5050: game.used5050,
+        usedHelpline: game.usedHelpline
     })
 
 
@@ -159,7 +165,7 @@ router.post('/', tokenExtractor, ( async (_req : Request, res: Response) => {
     const game = await Game.create({
         userId: userId,
         correctlyAnswered: 0,
-        numberOfQuestions: 16,
+        numberOfQuestions: 15,
         theme: theme
     })
 
@@ -345,6 +351,9 @@ router.get('/help5050/:id/:questionOrder', tokenExtractor, correctUser, (async (
 
     const orderedOptions = [correctAnswer, selectedWrongAnswer].sort()
 
+    // update db
+    Game.update({used5050: true}, {where: {id: gameId}})
+
     res.status(200).json({options: orderedOptions})
 
 
@@ -406,6 +415,8 @@ router.get('/helpaudience/:id/:questionOrder', tokenExtractor, correctUser, (asy
             index += 1;
         }
     }
+
+    Game.update({usedAudience: true}, {where: {id: gameId}})
 
     res.status(200).json({votes: finalVotes})
 
