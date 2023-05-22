@@ -8,7 +8,6 @@ import { router as chatgptRouter } from './controllers/chatgpt';
 import { router as gameRouter } from './controllers/game';
 
 import { router as gameRouterSSE } from './controllers/game_SSE';
-import { router as helpRouterSSE } from './controllers/help_SSE';
 
 import { errorHandler } from "./util/middleware";
 
@@ -23,7 +22,6 @@ app.use('/api/login', loginRouter);
 app.use('/api/chatgpt', chatgptRouter);
 app.use('/api/game', gameRouter );
 app.use('/api/gameSSE', gameRouterSSE);
-app.use('/api/helpSSE', helpRouterSSE)
 
 app.use(errorHandler);
 

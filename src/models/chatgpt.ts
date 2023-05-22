@@ -6,6 +6,16 @@ import { Game } from './game';
 
 import { AvailableCharacters, characterFirstSystemMessage } from "./characters"
 import { HelpConversation } from './helpConversation';
+import getStructuredQuestion from '../util/extractStructuredQuestion';
+
+const questionStructureCheck = (chatGPTMessageContent: string) => {
+    const strucutedResponse = getStructuredQuestion(chatGPTMessageContent);
+    if(strucutedResponse === null) {
+        return false
+    } else {
+        return true
+    }
+}
 
 
 export type message = {
@@ -23,7 +33,7 @@ export interface chatGPTRequestBody {
 
 class chatGPTInterfaceClass  {
 
-    async getGenericResponse(messages: messages, temperature? : number) {
+    async getGenericResponse(messages: messages, temperature? : number, structureCheck?: (chatGPTMessageContent: string) => boolean) {
         const headers = {
             "Content-Type": "application/json",
             "Authorization" : `Bearer ${CHATGPT_API_KEY}`
@@ -32,18 +42,51 @@ class chatGPTInterfaceClass  {
         const body : chatGPTRequestBody = {
             model : "gpt-3.5-turbo",
             messages: messages,
-            temperature : temperature? temperature : 1.0
+            temperature : temperature? temperature : 0.75
         }
 
-        const response = await fetch(` https://api.openai.com/v1/chat/completions`, {
-            method: "POST",
-            headers: headers,
-            body: JSON.stringify(body)
-        })
+        // recurrent API call until response is ok, limit = 10
+        let counter = 0;
+        let makeAnotherRequest = true;
+        let jsonData;
 
-        const jsonResponse = await response.json();
+        while(makeAnotherRequest) {
 
-        return jsonResponse;
+            const anotherResponse = await fetch(` https://api.openai.com/v1/chat/completions`, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(body)
+            })
+
+            console.log(`Making call number ${counter}`)
+            counter += 1;
+
+            if(counter > 3) {
+                throw new Error('ChatGPT used more than 3 calls for one command')
+            }
+
+
+            if(anotherResponse.ok || counter > 3) {
+                
+                jsonData = await anotherResponse.json()
+
+                // optional structure check for the chatgpt response
+                if(!structureCheck) {
+                    makeAnotherRequest = false;
+                } else if(structureCheck && structureCheck(jsonData.choices[0].message.content)) {
+                    makeAnotherRequest = false;
+                } else {
+                    makeAnotherRequest = true;
+                    console.log('ChatGPT response did not have correct structure.')
+                }
+
+                if(!jsonData) {
+                    throw new Error(`ChatGPT response JSON is empty`);
+                }
+            } 
+        }
+
+        return jsonData;
     }
 
     async getNextQuestion(gameId: number, questionOrder: number, messages?: messages) {
@@ -75,12 +118,12 @@ class chatGPTInterfaceClass  {
             })
 
             // gen next response using all previous messages
-            return this.getGenericResponse([...messages,systemMessage]);
+            return this.getGenericResponse([...messages,systemMessage],undefined,questionStructureCheck);
         } else {
             // create initial system message and append
             const systemMessage : message = {
                 role: "system",
-                content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me a random question in the style of Who wants to be a millionaire and give me 4 options to answer with only one of them correct. Do not ask about the same topic twice. Make the question hard to answer. Structure your response so that there is always Question and : before the question and structure the 4 answers as a list indexed by the letters A, B, C, D. Structure your response so that there is always Answer and : before the correct answer. Make sure that the answer is exactly equal to the correct option."
+                content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me a random question in the style of Who wants to be a millionaire and give me 4 options to answer with only one of them correct. Do not ask about the same topic twice. Make the question hard to answer. Structure your response so that there is always Question and : before the question and structure the 4 answers as a list indexed by the letters A, B, C, D. Structure your response so that there is always Answer and : before the correct answer. Make sure that the answer is exactly equal to the correct option. Always include the answer in your response."
             }
 
             const sentMessages : messages = [ systemMessage ]

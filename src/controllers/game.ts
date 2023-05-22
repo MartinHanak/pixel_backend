@@ -352,7 +352,7 @@ router.get('/help5050/:id/:questionOrder', tokenExtractor, correctUser, (async (
     const orderedOptions = [correctAnswer, selectedWrongAnswer].sort()
 
     // update db
-    Game.update({used5050: true}, {where: {id: gameId}})
+    await Game.update({used5050: true}, {where: {id: gameId}})
 
     res.status(200).json({options: orderedOptions})
 
@@ -416,7 +416,7 @@ router.get('/helpaudience/:id/:questionOrder', tokenExtractor, correctUser, (asy
         }
     }
 
-    Game.update({usedAudience: true}, {where: {id: gameId}})
+    await Game.update({usedAudience: true}, {where: {id: gameId}})
 
     res.status(200).json({votes: finalVotes})
 
@@ -491,6 +491,8 @@ router.post('/helpline/:id/:questionOrder', tokenExtractor, correctUser, (async 
         selectedCharacter: selectedCharacter,
         content: newMessage.content
     })
+
+    await Game.update({usedHelpline: true}, {where: {id: gameId}})
 
     res.status(200).json({
         role: newMessage.role,
@@ -629,6 +631,8 @@ export async function initializeQuestion(gameId: number, questionOrder: number, 
 
         // queue processing of the chatGPT response before responding, but do not await
         newConversationMessage.then((chatGPTResponse) => {
+            
+
             const newMessage : message = chatGPTResponse.choices[0].message;
 
             Conversation.create({
@@ -647,6 +651,11 @@ export async function initializeQuestion(gameId: number, questionOrder: number, 
 
         newQuestionMessage.then((chatGPTResponse) => {
             const newMessage : message = chatGPTResponse.choices[0].message;
+
+            // check if correct structure
+            if(getStructuredQuestion(newMessage.content) === null) {
+                throw new Error('Could not extract question from the chatGPT response during initializeQuestion.')
+            }
 
             QuestionConversation.create({
                 gameId: gameId,

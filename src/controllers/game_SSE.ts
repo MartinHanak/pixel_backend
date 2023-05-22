@@ -40,8 +40,6 @@ router.get('/:id/:questionOrder', tokenExtractor, correctUser, (async (_req: Req
 
     const userId = res.locals.decodedToken.id as number;
 
-    //const data = `data: ${JSON.stringify({id: userId})}\n\n`;
-    //res.write(data);
 
     const sub = {
         userId: userId,
@@ -104,6 +102,8 @@ router.post('/:id/:questionOrder', tokenExtractor, (async ( _req : Request, res:
 
     await notifySubscriber(userId,gameId,questionOrder);
 
+    console.log(subscribers);
+
     res.status(200).json({success: true})
 }))
 
@@ -152,6 +152,7 @@ export async function notifySubscriber(userId: number, gameId: number, questionO
             question: extractQuestion(questionConvo.content),
             options: extractOptions(questionConvo.content)
         }
+        
 
         if(!data.question || !data.options) {
             subscribers[userId].forEach((sub) => {
