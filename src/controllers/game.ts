@@ -654,7 +654,7 @@ export async function initializeQuestion(gameId: number, questionOrder: number, 
 
             // check if correct structure
             if(getStructuredQuestion(newMessage.content) === null) {
-                throw new Error('Could not extract question from the chatGPT response during initializeQuestion.')
+                console.log('Could not extract question from the chatGPT response during initializeQuestion.')
             }
 
             QuestionConversation.create({

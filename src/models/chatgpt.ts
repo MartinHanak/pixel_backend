@@ -134,12 +134,12 @@ class chatGPTInterfaceClass  {
                 }
             })
 
-            if (game && game.theme) {
+            if (game && game.theme && game.theme !== '') {
                 const theme = game.theme;
 
                 const optionalSystemMessage : message = {
                     role: "system",
-                    content: `If possible, center all your question about the following topic: ${theme}. If it is not possible, ignore this command.`
+                    content: `Center all your question about the following topic: ${theme}.`
                 }
 
                 sentMessages.push(optionalSystemMessage);
