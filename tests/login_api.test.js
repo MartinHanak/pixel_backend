@@ -12,16 +12,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-require("reflect-metadata");
-const app_1 = __importDefault(require("./app"));
-const config_1 = require("./util/config");
-const db_1 = require("./util/db");
-const start = () => __awaiter(void 0, void 0, void 0, function* () {
+const supertest_1 = __importDefault(require("supertest"));
+const app_1 = __importDefault(require("../src/app"));
+const db_1 = require("../src/util/db");
+const api = (0, supertest_1.default)(app_1.default);
+beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
+    //await sequelize.authenticate()
+    //await sequelize.sync({force: true})
     yield (0, db_1.connectToDatabase)();
-    app_1.default.listen(config_1.PORT, () => {
-        console.log(`Server running on port ${config_1.PORT}`);
-    });
-});
-start()
-    .catch(() => console.log("App failed at startup"));
-//# sourceMappingURL=index.js.map
+}));
+test('login is successful', () => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield api.post('/api/login').send({ username: 'Martin', password: '1234' });
+    expect(response.status).toEqual(200);
+    expect(response.body.token).toContain("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ik1hcnRpbiIsImlkIjoxLCJpYXQiOjE2OD");
+    expect(response.body.username).toEqual("Martin");
+}), 100000);
+afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
+    yield db_1.sequelize.close();
+}));
+//# sourceMappingURL=login_api.test.js.map

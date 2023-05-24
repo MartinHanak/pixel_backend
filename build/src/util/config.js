@@ -23,30 +23,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.module = void 0;
+exports.CHATGPT_API_KEY = exports.SECRET = exports.DB_NAME = exports.DB_PASS = exports.DB_USER = exports.DATABASE_URL = exports.PORT = void 0;
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-exports.module = {
-    "development": {
-        "username": process.env.DB_USER,
-        "password": process.env.DB_PASS,
-        "database": process.env.DB_NAME,
-        "host": "127.0.0.1",
-        "dialect": "postgres"
-    },
-    "test": {
-        "username": process.env.DB_USER,
-        "password": process.env.DB_PASS,
-        "database": process.env.DB_NAME,
-        "host": "127.0.0.1",
-        "dialect": "postgres"
-    },
-    "production": {
-        "username": process.env.DB_USER,
-        "password": process.env.DB_PASS,
-        "database": process.env.DB_NAME,
-        "host": "127.0.0.1",
-        "dialect": "postgres"
-    }
-};
-//# sourceMappingURL=db_config.js.map
+exports.PORT = process.env.PORT || 3002;
+exports.DATABASE_URL = process.env.NODE_ENV === "test" ? process.env.TEST_DATABASE_URL : process.env.DATABASE_URL;
+exports.DB_USER = process.env.DB_USER;
+exports.DB_PASS = process.env.DB_PASS;
+exports.DB_NAME = process.env.DB_NAME;
+exports.SECRET = process.env.SECRET;
+exports.CHATGPT_API_KEY = process.env.CHATGPT_API_KEY;
+//# sourceMappingURL=config.js.map

@@ -12,16 +12,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-require("reflect-metadata");
-const app_1 = __importDefault(require("./app"));
-const config_1 = require("./util/config");
-const db_1 = require("./util/db");
-const start = () => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, db_1.connectToDatabase)();
-    app_1.default.listen(config_1.PORT, () => {
-        console.log(`Server running on port ${config_1.PORT}`);
-    });
-});
-start()
-    .catch(() => console.log("App failed at startup"));
-//# sourceMappingURL=index.js.map
+exports.router = void 0;
+const express_1 = __importDefault(require("express"));
+exports.router = express_1.default.Router();
+const chatgpt_1 = require("../models/chatgpt");
+exports.router.get('/', ((_req, res) => {
+    res.status(200).json({ message: "ChatGPT api online" });
+}));
+exports.router.post('/', ((_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const response = yield chatgpt_1.chatGPTInterface.getNextQuestion(0, 0);
+        res.status(200).send(response);
+    }
+    catch (err) {
+        res.status(400).json({ error: err });
+    }
+})));
+//# sourceMappingURL=chatgpt.js.map

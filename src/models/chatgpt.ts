@@ -62,7 +62,9 @@ class chatGPTInterfaceClass  {
             counter += 1;
 
             if(counter > 3) {
-                throw new Error('ChatGPT used more than 3 calls for one command')
+                console.log('ChatGPT used more than 3 calls for one command')
+                jsonData = {}
+                return jsonData;
             }
 
 

@@ -631,7 +631,10 @@ export async function initializeQuestion(gameId: number, questionOrder: number, 
 
         // queue processing of the chatGPT response before responding, but do not await
         newConversationMessage.then((chatGPTResponse) => {
-            
+
+            if(!chatGPTResponse.choices[0].message) {
+                throw new Error('No message in chatGPT response')
+            }
 
             const newMessage : message = chatGPTResponse.choices[0].message;
 
@@ -647,9 +650,16 @@ export async function initializeQuestion(gameId: number, questionOrder: number, 
             console.log("message ready")
             console.log(newMessage)
 
+        }).catch(() => {
+            console.log('Failed to get chatGPT new conversation message.')
         })
 
         newQuestionMessage.then((chatGPTResponse) => {
+
+            if(!chatGPTResponse.choices[0].message) {
+                throw new Error('No message in chatGPT response')
+            }
+
             const newMessage : message = chatGPTResponse.choices[0].message;
 
             // check if correct structure
@@ -669,6 +679,8 @@ export async function initializeQuestion(gameId: number, questionOrder: number, 
             console.log("message ready")
             console.log(getStructuredQuestion(newMessage.content))
             
+        }).catch(() => {
+            console.log('Failed to get chatGPT new question message.')
         })
 
 }

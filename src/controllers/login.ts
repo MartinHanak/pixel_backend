@@ -11,6 +11,7 @@ export const router = express.Router();
 const correctInputFormat =  (_req : Request, res : Response, next: NextFunction) => {
     if(!(_req.body.username && _req.body.password)) {
         res.status(400).json({error: "Input does not contain username or password"});
+        return;
     } else {
         next();
     }
@@ -27,6 +28,7 @@ const userExists = (async (_req : Request, res : Response, next: NextFunction) =
 
     if(!user) {
         res.status(404).json({error: "User does not exists."});
+        return;
     } else {
         res.locals.user = user ;
         next();
@@ -39,6 +41,7 @@ const passwordMatch = (async (_req: Request, res: Response, next: NextFunction) 
 
     if(!match) {
         res.status(400).json({error: "Password for the given username is not correct."});
+        return;
     }
 
     next();
