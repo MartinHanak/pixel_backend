@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import app from './app'
 import { PORT } from './util/config';
 import { connectToDatabase } from './util/db';
