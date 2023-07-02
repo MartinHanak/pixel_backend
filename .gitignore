@@ -1,4 +1,5 @@
 setup_notes.md
 .env
 build/.env
+build
 node_modules
