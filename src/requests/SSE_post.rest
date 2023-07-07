@@ -1,7 +1,7 @@
-POST http://localhost:3001/api/gameSSE/201/2
+POST http://localhost:3002/api/gameSSE/319/16
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ik1hcnRpbiIsImlkIjoxLCJpYXQiOjE2ODA3OTE1Njd9.lZPV0hRSY6Pvpl8R8_LfpWCNOR0W3JbSss-fsjd93s8
 
 {
-    "prompt" : "test prompts"
+    
 }

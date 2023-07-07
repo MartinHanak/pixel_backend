@@ -25,7 +25,7 @@ export type message = {
 export type messages = message[];
 
 export interface chatGPTRequestBody {
-    model: "gpt-3.5-turbo",
+    model: "gpt-4" | "gpt-3.5-turbo",
     messages: messages,
     temperature: number
 }
@@ -40,7 +40,7 @@ class chatGPTInterfaceClass  {
         }
 
         const body : chatGPTRequestBody = {
-            model : "gpt-3.5-turbo",
+            model :  "gpt-4", // "gpt-3.5-turbo",  
             messages: messages,
             temperature : temperature? temperature : 0.75
         }

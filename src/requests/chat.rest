@@ -1,6 +1,6 @@
-POST http://localhost:3001/api/chatgpt
+POST  http://localhost:3002/api/chatgpt
 Content-Type: application/json
 
 {
-    "prompt" : "test prompts"
+    "prompt" : "pretend that you are a less inteligent individual believing in conspiracy theories. Tell me some of the outrages things you believe in."
 }

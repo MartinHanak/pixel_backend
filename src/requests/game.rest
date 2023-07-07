@@ -1,7 +1,7 @@
-POST http://localhost:3001/api/game
+POST http://localhost:3002/api/game
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ik1hcnRpbiIsImlkIjoxLCJpYXQiOjE2ODA3OTE1Njd9.lZPV0hRSY6Pvpl8R8_LfpWCNOR0W3JbSss-fsjd93s8
 
 {
-    "theme" : "DISNEY movies"
+    "theme" : "DISNEY moviesco"
 }
