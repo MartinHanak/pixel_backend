@@ -126,13 +126,9 @@ class chatGPTInterfaceClass  {
             // gen next response using all previous messages
             return this.getGenericResponse([...messages,systemMessage],undefined,questionStructureCheck);
         } else {
-            // create initial system message and append
-            const systemMessage : message = {
-                role: "system",
-                content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me a random question in the style of Who wants to be a millionaire and give me 4 options to answer with only one of them correct. Do not ask about the same topic twice. Make the question hard to answer. Structure your response so that there is always Question and : before the question and structure the 4 answers as a list indexed by the letters A, B, C, D. Structure your response so that there is always Answer and : before the correct answer. Make sure that the answer is exactly equal to the correct option. Always include the answer in your response."
-            }
 
-            const sentMessages : messages = [ systemMessage ]
+            // optional additional instructions
+            let additionalInstructions = '';
 
             const game = await Game.findOne({
                 where: {
@@ -143,14 +139,18 @@ class chatGPTInterfaceClass  {
             if (game && game.theme && game.theme !== '') {
                 const theme = game.theme;
 
-                const optionalSystemMessage : message = {
-                    role: "system",
-                    content: `Center all your question about the following topic: ${theme}.`
-                }
-
-                sentMessages.push(optionalSystemMessage);
+                additionalInstructions += `Center all your question about the following topic: ${theme}. `
 
             }
+
+            // create initial system message and append
+            const systemMessage : message = {
+                role: "system",
+                content: "Pretend that you are a host for the Who wants to be a millionaire show. Tell me a random question in the style of Who wants to be a millionaire and give me 4 options to answer with only one of them correct. Do not ask about the same topic twice. Make the question hard to answer. Structure your response so that there is always Question and : before the question and structure the 4 answers as a list indexed by the letters A, B, C, D. Structure your response so that there is always Answer and : before the correct answer. Make sure that the answer is exactly equal to the correct option. Always include the answer in your response. " 
+                + additionalInstructions
+            }
+
+            const sentMessages : messages = [ systemMessage ]
 
             // save used messages
             await QuestionConversation.bulkCreate(
