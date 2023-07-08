@@ -15,6 +15,11 @@ import { DATABASE_URL  } from './config';
 import { HelpConversation } from "../models/helpConversation";
 
 
+export const migrationsFolderPath = 
+process.env.NODE_ENV === "development" ? join(__dirname, '../migrations') 
+: join(__dirname, '../migrations_prod');
+
+
 export const sequelize = new Sequelize( DATABASE_URL  as string, {
     dialect: "postgres",
     logging: false,
@@ -26,7 +31,7 @@ export const sequelize = new Sequelize( DATABASE_URL  as string, {
 const runMigrations = async () => {
     const migrator = new Umzug({
         migrations: {
-            glob: join(__dirname, '../migrations/*.js'),
+            glob: join(migrationsFolderPath, './*.js'),
             resolve: ({ name, path, context }) => {
             // adjust the migration parameters Umzug will
             // pass to migration methods, this is done because 
@@ -48,6 +53,7 @@ const runMigrations = async () => {
     })
 
     const migrations = await migrator.up()
+    console.log(`Using migrations in the folder: ${migrationsFolderPath}`);
     console.log('Migrations up to date', {
         files: migrations.map((mig) => mig.name)
     })
@@ -60,7 +66,7 @@ export const connectToDatabase = async () => {
 
         // create migration file
         await SequelizeTypescriptMigration.makeMigration(sequelize, {
-            outDir: join(__dirname, '../migrations'),
+            outDir: migrationsFolderPath,
             migrationName: `${Date.now()}_migration`,
             preview: false
         }) 

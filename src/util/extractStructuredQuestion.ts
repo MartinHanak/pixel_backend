@@ -88,8 +88,30 @@ export function extractAnswer(input: string) : answerType | null {
     if(match  && (match[4] === "A" || match[4] === "B" || match[4] === "C" || match[4] === "D")) {
         return match[4];
     } else {
-        return null
-    }
+
+        // alternative for answer: answer is equal to one of the options exactly 
+        // (without ABCD)
+        const answerAlternativeRegExp = /(Answer:)(\s+)?(\n)?(.+)/i;
+
+        const match = input.match(answerAlternativeRegExp);
+        const options = extractOptions(input);
+
+        if(match && options) {
+            if (match.includes(options.A)) {
+                return "A"
+            } else if (match.includes(options.B)) {
+                return "B"
+            } else if (match.includes(options.C)) {
+                return "C"
+            } else if (match.includes(options.D)) {
+                return "D"
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    } 
 
 }
 

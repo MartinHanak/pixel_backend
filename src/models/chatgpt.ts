@@ -34,6 +34,9 @@ export interface chatGPTRequestBody {
 class chatGPTInterfaceClass  {
 
     async getGenericResponse(messages: messages, temperature? : number, structureCheck?: (chatGPTMessageContent: string) => boolean) {
+
+        console.log(messages)
+
         const headers = {
             "Content-Type": "application/json",
             "Authorization" : `Bearer ${CHATGPT_API_KEY}`
@@ -80,6 +83,7 @@ class chatGPTInterfaceClass  {
                 } else {
                     makeAnotherRequest = true;
                     console.log('ChatGPT response did not have correct structure.')
+                    console.log(jsonData.choices[0].message.content)
                 }
 
                 if(!jsonData) {
